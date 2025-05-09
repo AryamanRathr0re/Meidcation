@@ -4,6 +4,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 
+// Hospital theme colors
+const hospitalBg = "#eaf6f8";
+const hospitalCard = "#fafdff";
+const hospitalAccent = "#4db6ac";
+const hospitalText = "#23404a";
+const hospitalButton = "#4db6ac";
+const hospitalButtonHover = "#00897b";
+
 const Nav = styled.nav`
   background: #2c3e50;
   padding: 1rem 2rem;
@@ -48,7 +56,7 @@ const NavLinks = styled.div`
   align-items: center;
   gap: 2rem;
   margin-left: auto;
-  padding-left: 200px; /* Add space for the logo */
+  padding-left: 200px;
 `;
 
 const NavLink = styled(Link)`

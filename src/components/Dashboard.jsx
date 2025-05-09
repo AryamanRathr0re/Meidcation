@@ -349,6 +349,10 @@ function Dashboard() {
             <DateText>{new Date().toLocaleDateString()}</DateText>
           </WelcomeSection>
 
+          <AddButton onClick={() => setShowAddModal(true)}>
+            + Add Medication
+          </AddButton>
+
           <DashboardGrid>
             <Widget>
               <WidgetTitle>

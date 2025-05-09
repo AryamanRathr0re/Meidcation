@@ -21,9 +21,18 @@ const fadeInUp = keyframes`
   }
 `;
 
+// Hospital theme colors
+const hospitalBg = "#eaf6f8"; // soft blue-green
+const hospitalCard = "#fafdff"; // gentle white
+const hospitalAccent = "#4db6ac"; // teal accent
+const hospitalText = "#23404a"; // deep blue-green
+const hospitalSubtle = "#b2dfdb"; // subtle accent
+const hospitalButton = "#4db6ac";
+const hospitalButtonHover = "#00897b";
+
 // Layout Components
 export const DashboardBackground = styled.div`
-  background: #f5f7fa;
+  background: ${hospitalBg};
   min-height: 100vh;
 `;
 
@@ -43,12 +52,12 @@ export const WelcomeSection = styled.div`
 
 export const WelcomeText = styled.h1`
   font-size: 2rem;
-  color: #2c3e50;
+  color: ${hospitalText};
   margin-bottom: 0.5rem;
 `;
 
 export const DateText = styled.p`
-  color: #7f8c8d;
+  color: ${hospitalAccent};
   font-size: 1rem;
 `;
 
@@ -61,14 +70,14 @@ export const DashboardGrid = styled.div`
 
 // Widget Components
 export const Widget = styled.div`
-  background: white;
+  background: ${hospitalCard};
   border-radius: 12px;
   padding: 1.75rem;
-  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.1);
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
   min-height: 340px;
   transition: box-shadow 0.2s, transform 0.2s;
   &:hover {
-    box-shadow: 0 6px 24px rgba(44, 62, 80, 0.16);
+    box-shadow: 0 6px 24px rgba(44, 62, 80, 0.13);
     transform: translateY(-2px) scale(1.01);
   }
 `;
@@ -80,7 +89,7 @@ export const AnalyticsCard = styled(Widget)`
 
 export const WidgetTitle = styled.h2`
   font-size: 1.25rem;
-  color: #2c3e50;
+  color: ${hospitalAccent};
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
@@ -89,7 +98,7 @@ export const WidgetTitle = styled.h2`
 
 // Form Components
 export const AddButton = styled.button`
-  background: #3498db;
+  background: ${hospitalButton};
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -100,7 +109,7 @@ export const AddButton = styled.button`
   margin-bottom: 1.5rem;
   transition: background 0.2s;
   &:hover {
-    background: #2980b9;
+    background: ${hospitalButtonHover};
   }
 `;
 
