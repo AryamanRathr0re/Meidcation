@@ -142,7 +142,8 @@ function Footer() {
         </FooterColumn>
       </Container>
       <Copyright>
-        © {new Date().getFullYear()} Medisafe. All rights reserved.
+        © {new Date().getFullYear()} MediGuard. All rights reserved.
+        Created With ❤️ By Aryaman Rathore
       </Copyright>
     </FooterSection>
   );

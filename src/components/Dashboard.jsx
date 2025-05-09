@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import styled, { keyframes } from "styled-components";
 import { auth, database } from "../firebase";
 import { ref, onValue, update, remove } from "firebase/database";
 import { v4 as uuidv4 } from "uuid";
@@ -8,290 +7,50 @@ import AddMedicationModal from "./dashboard/AddMedicationModal";
 import Footer from "./Footer";
 import EditMedicationModal from "./dashboard/EditMedicationModal";
 import DeleteMedicationModal from "./dashboard/DeleteMedicationModal";
-
-const DashboardContainer = styled.div`
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-`;
-
-const WelcomeSection = styled.div`
-  margin-bottom: 2rem;
-`;
-
-const WelcomeText = styled.h1`
-  font-size: 2rem;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
-`;
-
-const DateText = styled.p`
-  color: #7f8c8d;
-  font-size: 1rem;
-`;
-
-const DashboardGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-`;
-
-const Widget = styled.div`
-  background: white;
-  border-radius: 10px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const WidgetTitle = styled.h2`
-  font-size: 1.25rem;
-  color: #2c3e50;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-`;
-
-const MedicationCard = styled.div`
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const MedicationInfo = styled.div`
-  flex: 1;
-`;
-
-const MedicationName = styled.h3`
-  font-size: 1rem;
-  color: #2c3e50;
-  margin-bottom: 0.25rem;
-`;
-
-const MedicationDetails = styled.p`
-  font-size: 0.875rem;
-  color: #7f8c8d;
-`;
-
-const ActionButton = styled.button`
-  background: #3498db;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.875rem;
-  transition: background 0.2s;
-
-  &:hover {
-    background: #2980b9;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #7f8c8d;
-`;
-
-const NotificationContainer = styled.div`
-  position: fixed;
-  top: 32px;
-  right: 32px;
-  z-index: 2000;
-  min-width: 320px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(52, 152, 219, 0.15);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  animation: fadeIn 0.4s;
-`;
-
-const NotificationTitle = styled.h3`
-  margin: 0 0 0.5rem 0;
-  color: #3498db;
-  font-size: 1.1rem;
-`;
-
-const NotificationActions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-`;
-
-const NotificationButton = styled.button`
-  background: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  &:hover {
-    background: #2980b9;
-  }
-`;
-
-const SnoozeButton = styled(NotificationButton)`
-  background: #f1c40f;
-  color: #2c3e50;
-  &:hover {
-    background: #f39c12;
-  }
-`;
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(44, 62, 80, 0.4);
-  z-index: 3000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fadeIn 0.3s;
-`;
-
-const ModalContent = styled.div`
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(44, 62, 80, 0.18);
-  padding: 2rem 2.5rem;
-  min-width: 340px;
-  max-width: 90vw;
-  animation: fadeInUp 0.3s;
-`;
-
-const ModalTitle = styled.h3`
-  margin-top: 0;
-  color: #3498db;
-  font-size: 1.2rem;
-`;
-
-const ModalActions = styled.div`
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  justify-content: flex-end;
-`;
-
-const ModalButton = styled.button`
-  background: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 0.5rem 1.2rem;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  &:hover {
-    background: #2980b9;
-  }
-`;
-
-const CancelButton = styled(ModalButton)`
-  background: #e2e8f0;
-  color: #2c3e50;
-  &:hover {
-    background: #cbd5e0;
-  }
-`;
-
-const SnoozeOptions = styled.div`
-  display: flex;
-  gap: 0.5rem;
-  margin: 1rem 0;
-`;
-
-const OptionButton = styled.button`
-  background: #f8f9fa;
-  color: #2c3e50;
-  border: 1px solid #e2e8f0;
-  border-radius: 5px;
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: background 0.2s, border 0.2s;
-  &.active,
-  &:hover {
-    background: #3498db;
-    color: #fff;
-    border: 1px solid #3498db;
-  }
-`;
-
-const CustomTimeInput = styled.input`
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #e2e8f0;
-  font-size: 1rem;
-  width: 100%;
-`;
-
-const AddButton = styled.button`
-  background: #3498db;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  margin-bottom: 1.5rem;
-  transition: background 0.2s;
-  &:hover {
-    background: #2980b9;
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 1rem;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
-  font-weight: 500;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #e2e8f0;
-  font-size: 1rem;
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.5rem;
-  border-radius: 5px;
-  border: 1px solid #e2e8f0;
-  font-size: 1rem;
-`;
-
-const ActionIcon = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: 0.5rem;
-  color: #7f8c8d;
-  font-size: 1.1rem;
-  &:hover {
-    color: #e74c3c;
-  }
-`;
+import MedicationHistory from "./dashboard/MedicationHistory";
+import { toast } from "react-hot-toast";
+import { doc, updateDoc } from "firebase/firestore";
+import ProtectedRoute from "./ProtectedRoute";
+import {
+  DashboardBackground,
+  DashboardContainer,
+  WelcomeSection,
+  WelcomeText,
+  DateText,
+  DashboardGrid,
+  Widget,
+  WidgetTitle,
+  AddButton,
+  FormGroup,
+  Label,
+  Input,
+  Select,
+  ModalOverlay,
+  ModalContent,
+  ModalTitle,
+  ModalActions,
+  ModalButton,
+  CancelButton,
+  NotificationContainer,
+  NotificationTitle,
+  NotificationActions,
+  NotificationButton,
+  SnoozeButton,
+  SnoozeOptions,
+  OptionButton,
+  CustomTimeInput,
+  AnalyticsCard,
+  SectionSpacer,
+} from "./dashboard/Dashboard.styles";
+import AdherenceAnalytics from "./dashboard/AdherenceAnalytics";
+import {
+  FaChartBar,
+  FaClock,
+  FaHistory,
+  FaList,
+  FaPills,
+} from "react-icons/fa";
+import HelpWidget from "./dashboard/HelpWidget";
 
 function Dashboard() {
   const [user, setUser] = useState(null);
@@ -318,6 +77,8 @@ function Dashboard() {
   const [deleteMed, setDeleteMed] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [renewDialogOpen, setRenewDialogOpen] = useState({});
+  const [renewalStatus, setRenewalStatus] = useState({});
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -329,7 +90,7 @@ function Dashboard() {
           if (data) {
             const medicationsList = Object.entries(data).map(
               ([id, medication]) => ({
-                id,
+                id: id || uuidv4(),
                 ...medication,
               })
             );
@@ -425,13 +186,15 @@ function Dashboard() {
 
   const handleRenewPrescription = async (medicationId) => {
     if (!user) return;
-
+    setRenewalStatus((prev) => ({ ...prev, [medicationId]: "Pending" }));
+    setTimeout(() => {
+      setRenewalStatus((prev) => ({ ...prev, [medicationId]: "Approved" }));
+    }, 2000);
     const medicationRef = ref(
       database,
       `users/${user.uid}/medications/${medicationId}`
     );
     const timestamp = new Date().toISOString();
-
     await update(medicationRef, {
       lastRenewed: timestamp,
     });
@@ -440,11 +203,25 @@ function Dashboard() {
   const onDragEnd = (result) => {
     if (!result.destination) return;
 
-    const items = Array.from(medications);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    try {
+      const items = Array.from(medications);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
 
-    setMedications(items);
+      // Update the order in Firebase
+      if (user) {
+        const updates = {};
+        items.forEach((item, index) => {
+          updates[`users/${user.uid}/medications/${item.id}/order`] = index;
+        });
+        update(ref(database), updates);
+      }
+
+      setMedications(items);
+    } catch (error) {
+      console.error("Error updating medication order:", error);
+      toast.error("Failed to update medication order");
+    }
   };
 
   const handleAddMedication = async (e) => {
@@ -456,9 +233,11 @@ function Dashboard() {
       database,
       `users/${user.uid}/medications/${medId}`
     );
+    const timestamp = new Date().toISOString();
     await update(medicationRef, {
       id: medId,
       ...newMed,
+      createdAt: timestamp,
     });
     setShowAddModal(false);
     setNewMed({ name: "", dosage: "", frequency: "Once daily", nextDose: "" });
@@ -502,199 +281,313 @@ function Dashboard() {
     setDeleting(false);
   };
 
+  const getBadgeType = (med) => {
+    const now = new Date();
+    let badge = null;
+    if (med.expiryDate) {
+      const expiry = new Date(med.expiryDate);
+      if (expiry < now) badge = "expired";
+      else if ((expiry - now) / (1000 * 60 * 60 * 24) < 7) badge = "expiring";
+    }
+    if (med.refillsLeft !== undefined && med.refillsLeft <= 1) badge = "low";
+    return badge;
+  };
+
+  const handleScheduleChange = async (medicationId, newSchedule) => {
+    try {
+      const medicationRef = doc(database, "medications", medicationId);
+      await updateDoc(medicationRef, {
+        schedule: newSchedule,
+        lastUpdated: new Date().toISOString(),
+      });
+
+      // Update local state
+      setMedications((prev) =>
+        prev.map((med) =>
+          med.id === medicationId
+            ? {
+                ...med,
+                schedule: newSchedule,
+                lastUpdated: new Date().toISOString(),
+              }
+            : med
+        )
+      );
+
+      // Show success message
+      toast.success("Schedule updated successfully");
+    } catch (error) {
+      console.error("Error updating schedule:", error);
+      toast.error("Failed to update schedule");
+    }
+  };
+
+  // Prepare medications with history for analytics
+  const medicationsWithHistory = medications.map((med) => {
+    // If med.history exists, use it. Otherwise, build from lastTaken, createdAt, lastRenewed
+    if (med.history) return med;
+    const history = [];
+    if (med.createdAt) history.push({ date: med.createdAt, type: "added" });
+    if (med.lastTaken) history.push({ date: med.lastTaken, type: "taken" });
+    if (med.lastRenewed)
+      history.push({ date: med.lastRenewed, type: "renewed" });
+    return { ...med, history };
+  });
+
   if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <DashboardContainer>
-      <AddButton onClick={() => setShowAddModal(true)}>
-        + Add Medication
-      </AddButton>
+    <ProtectedRoute>
+      <DashboardBackground>
+        <DashboardContainer>
+          <WelcomeSection>
+            <WelcomeText>
+              Welcome back, {user?.displayName || "User"}!
+            </WelcomeText>
+            <DateText>{new Date().toLocaleDateString()}</DateText>
+          </WelcomeSection>
 
-      {showAddModal && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Add Medication</ModalTitle>
-            <form onSubmit={handleAddMedication}>
-              <FormGroup>
-                <Label>Name</Label>
-                <Input
-                  type="text"
-                  value={newMed.name}
-                  onChange={(e) =>
-                    setNewMed({ ...newMed, name: e.target.value })
-                  }
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>Dosage</Label>
-                <Input
-                  type="text"
-                  value={newMed.dosage}
-                  onChange={(e) =>
-                    setNewMed({ ...newMed, dosage: e.target.value })
-                  }
-                  required
-                />
-              </FormGroup>
-              <FormGroup>
-                <Label>Frequency</Label>
-                <Select
-                  value={newMed.frequency}
-                  onChange={(e) =>
-                    setNewMed({ ...newMed, frequency: e.target.value })
-                  }
-                >
-                  <option>Once daily</option>
-                  <option>Twice daily</option>
-                  <option>Every 8 hours</option>
-                  <option>Every 12 hours</option>
-                  <option>Weekly</option>
-                </Select>
-              </FormGroup>
-              <FormGroup>
-                <Label>Next Dose</Label>
-                <Input
-                  type="datetime-local"
-                  value={newMed.nextDose}
-                  onChange={(e) =>
-                    setNewMed({ ...newMed, nextDose: e.target.value })
-                  }
-                  required
-                  min={new Date().toISOString().slice(0, 16)}
-                />
-              </FormGroup>
-              <ModalActions>
-                <CancelButton
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                >
-                  Cancel
-                </CancelButton>
-                <ModalButton type="submit" disabled={adding}>
-                  {adding ? "Adding..." : "Add"}
-                </ModalButton>
-              </ModalActions>
-            </form>
-          </ModalContent>
-        </ModalOverlay>
-      )}
-
-      {showReminder && reminder && (
-        <NotificationContainer>
-          <NotificationTitle>Reminder: {reminder.name}</NotificationTitle>
-          <div>
-            It's time to take your dose: <b>{reminder.dosage}</b>
-          </div>
-          <NotificationActions>
-            <NotificationButton onClick={handleTakeReminder}>
-              Taken
-            </NotificationButton>
-            <NotificationButton onClick={handleMissedReminder}>
-              Missed
-            </NotificationButton>
-            <SnoozeButton onClick={handleSnoozeReminder}>Snooze</SnoozeButton>
-          </NotificationActions>
-        </NotificationContainer>
-      )}
-
-      {showSnoozeModal && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalTitle>Snooze or Reschedule Reminder</ModalTitle>
-            <div>
-              Choose a snooze duration or set a custom time for your next dose.
-            </div>
-            <SnoozeOptions>
-              {[5, 10, 15, 30].map((min) => (
-                <OptionButton
-                  key={min}
-                  className={
-                    snoozeType === "preset" && snoozeMinutes === min
-                      ? "active"
-                      : ""
-                  }
-                  onClick={() => {
-                    setSnoozeType("preset");
-                    setSnoozeMinutes(min);
-                  }}
-                >
-                  {min} min
-                </OptionButton>
-              ))}
-              <OptionButton
-                className={snoozeType === "custom" ? "active" : ""}
-                onClick={() => setSnoozeType("custom")}
-              >
-                Custom
-              </OptionButton>
-            </SnoozeOptions>
-            {snoozeType === "custom" && (
-              <CustomTimeInput
-                type="datetime-local"
-                value={customTime}
-                onChange={(e) => setCustomTime(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
+          <DashboardGrid>
+            <Widget>
+              <WidgetTitle>
+                <FaClock /> Upcoming Doses
+              </WidgetTitle>
+              <MedicationList
+                medications={medications}
+                onDragEnd={onDragEnd}
+                onTake={(med) => handleTakeMedication(med.id)}
+                onEdit={handleEditMedication}
+                onDelete={handleDeleteMedication}
+                onRenew={handleRenewPrescription}
+                renewalStatus={renewalStatus}
+                showRenewDialog={renewDialogOpen}
+                setShowRenewDialog={setRenewDialogOpen}
+                badgeType={(med) => getBadgeType(med)}
+                onScheduleChange={handleScheduleChange}
               />
-            )}
-            <ModalActions>
-              <CancelButton onClick={handleSnoozeCancel}>Cancel</CancelButton>
-              <ModalButton
-                onClick={handleSnoozeConfirm}
-                disabled={snoozeType === "custom" && !customTime}
-              >
-                Confirm
-              </ModalButton>
-            </ModalActions>
-          </ModalContent>
-        </ModalOverlay>
-      )}
+            </Widget>
 
-      <EditMedicationModal
-        open={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onSubmit={handleEditSubmit}
-        editMed={editMed}
-        setEditMed={setEditMed}
-        updating={updating}
-      />
-      <DeleteMedicationModal
-        open={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onDelete={confirmDeleteMedication}
-        deleteMed={deleteMed}
-        deleting={deleting}
-      />
+            <Widget>
+              <WidgetTitle>
+                <FaHistory /> Medication History
+              </WidgetTitle>
+              <MedicationHistory medications={medications} />
+            </Widget>
 
-      <WelcomeSection>
-        <WelcomeText>Welcome back, {user?.displayName || "User"}!</WelcomeText>
-        <DateText>{new Date().toLocaleDateString()}</DateText>
-      </WelcomeSection>
+            <Widget>
+              <WidgetTitle>
+                <FaList /> Recent Actions
+              </WidgetTitle>
+              <MedicationList
+                medications={medications}
+                onDragEnd={onDragEnd}
+                onTake={(med) => handleTakeMedication(med.id)}
+                onEdit={handleEditMedication}
+                onDelete={handleDeleteMedication}
+                onRenew={handleRenewPrescription}
+                renewalStatus={renewalStatus}
+                showRenewDialog={renewDialogOpen}
+                setShowRenewDialog={setRenewDialogOpen}
+                badgeType={(med) => getBadgeType(med)}
+                onScheduleChange={handleScheduleChange}
+              />
+            </Widget>
 
-      <DashboardGrid>
-        <Widget>
-          <WidgetTitle>Upcoming Doses</WidgetTitle>
-          <MedicationList
-            medications={medications}
-            onDragEnd={onDragEnd}
-            onTakeMedication={handleTakeMedication}
-            onRenewPrescription={handleRenewPrescription}
-            onEditMedication={handleEditMedication}
-            onDeleteMedication={handleDeleteMedication}
+            <Widget>
+              <WidgetTitle>
+                <FaPills /> Medications
+              </WidgetTitle>
+              <MedicationList
+                medications={medications}
+                onDragEnd={onDragEnd}
+                onTake={(med) => handleTakeMedication(med.id)}
+                onEdit={handleEditMedication}
+                onDelete={handleDeleteMedication}
+                onRenew={handleRenewPrescription}
+                renewalStatus={renewalStatus}
+                showRenewDialog={renewDialogOpen}
+                setShowRenewDialog={setRenewDialogOpen}
+                badgeType={(med) => getBadgeType(med)}
+                onScheduleChange={handleScheduleChange}
+              />
+            </Widget>
+          </DashboardGrid>
+
+          <SectionSpacer />
+
+          <AnalyticsCard>
+            <WidgetTitle>
+              <FaChartBar /> Adherence Progress
+            </WidgetTitle>
+            <AdherenceAnalytics medications={medicationsWithHistory} />
+          </AnalyticsCard>
+
+          {showAddModal && (
+            <ModalOverlay>
+              <ModalContent>
+                <ModalTitle>Add Medication</ModalTitle>
+                <form onSubmit={handleAddMedication}>
+                  <FormGroup>
+                    <Label>Name</Label>
+                    <Input
+                      type="text"
+                      value={newMed.name}
+                      onChange={(e) =>
+                        setNewMed({ ...newMed, name: e.target.value })
+                      }
+                      required
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Dosage</Label>
+                    <Input
+                      type="text"
+                      value={newMed.dosage}
+                      onChange={(e) =>
+                        setNewMed({ ...newMed, dosage: e.target.value })
+                      }
+                      required
+                    />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Frequency</Label>
+                    <Select
+                      value={newMed.frequency}
+                      onChange={(e) =>
+                        setNewMed({ ...newMed, frequency: e.target.value })
+                      }
+                    >
+                      <option>Once daily</option>
+                      <option>Twice daily</option>
+                      <option>Every 8 hours</option>
+                      <option>Every 12 hours</option>
+                      <option>Weekly</option>
+                    </Select>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Next Dose</Label>
+                    <Input
+                      type="datetime-local"
+                      value={newMed.nextDose}
+                      onChange={(e) =>
+                        setNewMed({ ...newMed, nextDose: e.target.value })
+                      }
+                      required
+                      min={new Date().toISOString().slice(0, 16)}
+                    />
+                  </FormGroup>
+                  <ModalActions>
+                    <CancelButton
+                      type="button"
+                      onClick={() => setShowAddModal(false)}
+                    >
+                      Cancel
+                    </CancelButton>
+                    <ModalButton type="submit" disabled={adding}>
+                      {adding ? "Adding..." : "Add"}
+                    </ModalButton>
+                  </ModalActions>
+                </form>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+
+          {showReminder && reminder && (
+            <NotificationContainer>
+              <NotificationTitle>Reminder: {reminder.name}</NotificationTitle>
+              <div>
+                It's time to take your dose: <b>{reminder.dosage}</b>
+              </div>
+              <NotificationActions>
+                <NotificationButton onClick={handleTakeReminder}>
+                  Taken
+                </NotificationButton>
+                <NotificationButton onClick={handleMissedReminder}>
+                  Missed
+                </NotificationButton>
+                <SnoozeButton onClick={handleSnoozeReminder}>
+                  Snooze
+                </SnoozeButton>
+              </NotificationActions>
+            </NotificationContainer>
+          )}
+
+          {showSnoozeModal && (
+            <ModalOverlay>
+              <ModalContent>
+                <ModalTitle>Snooze or Reschedule Reminder</ModalTitle>
+                <div>
+                  Choose a snooze duration or set a custom time for your next
+                  dose.
+                </div>
+                <SnoozeOptions>
+                  {[5, 10, 15, 30].map((min) => (
+                    <OptionButton
+                      key={min}
+                      className={
+                        snoozeType === "preset" && snoozeMinutes === min
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() => {
+                        setSnoozeType("preset");
+                        setSnoozeMinutes(min);
+                      }}
+                    >
+                      {min} min
+                    </OptionButton>
+                  ))}
+                  <OptionButton
+                    className={snoozeType === "custom" ? "active" : ""}
+                    onClick={() => setSnoozeType("custom")}
+                  >
+                    Custom
+                  </OptionButton>
+                </SnoozeOptions>
+                {snoozeType === "custom" && (
+                  <CustomTimeInput
+                    type="datetime-local"
+                    value={customTime}
+                    onChange={(e) => setCustomTime(e.target.value)}
+                    min={new Date().toISOString().slice(0, 16)}
+                  />
+                )}
+                <ModalActions>
+                  <CancelButton onClick={handleSnoozeCancel}>
+                    Cancel
+                  </CancelButton>
+                  <ModalButton
+                    onClick={handleSnoozeConfirm}
+                    disabled={snoozeType === "custom" && !customTime}
+                  >
+                    Confirm
+                  </ModalButton>
+                </ModalActions>
+              </ModalContent>
+            </ModalOverlay>
+          )}
+
+          <EditMedicationModal
+            open={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            onSubmit={handleEditSubmit}
+            editMed={editMed}
+            setEditMed={setEditMed}
+            updating={updating}
           />
-        </Widget>
-
-        <Widget>
-          <WidgetTitle>Recent Actions</WidgetTitle>
-          <MedicationList
-            medications={medications}
-            onRenewPrescription={handleRenewPrescription}
+          <DeleteMedicationModal
+            open={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            onDelete={confirmDeleteMedication}
+            deleteMed={deleteMed}
+            deleting={deleting}
           />
-        </Widget>
-      </DashboardGrid>
-    </DashboardContainer>
+        </DashboardContainer>
+      </DashboardBackground>
+      <HelpWidget />
+    </ProtectedRoute>
   );
 }
 
